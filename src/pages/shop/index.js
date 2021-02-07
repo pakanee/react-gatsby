@@ -5,6 +5,7 @@ import {Table,Button,Modal,notification} from "antd"
 
 import Layout from '../../components/layout';
 import { Content } from 'antd/lib/layout/layout';
+import Create from './create';
 
  class Shop extends React.Component {
     constructor(){
@@ -15,11 +16,33 @@ import { Content } from 'antd/lib/layout/layout';
             data:[],
             message:null,
             titleModal:null,
+            filteredInfo: null,
+            sortedInfo: null,
         };
       //  this.onDelete = this.onDelete.bind(this);
       
 
     }
+
+    handleChange = (pagination, filters, sorter) => {
+        console.log('Various parameters', pagination, filters, sorter);
+        this.setState({
+          filteredInfo: filters,
+          sortedInfo: sorter,
+        });
+      };
+    
+      clearFilters = () => {
+        this.setState({ filteredInfo: null });
+      };
+    
+      clearAll = () => {
+        this.setState({
+          filteredInfo: null,
+          sortedInfo: null,
+        });
+      };
+
     componentDidMount(){
         console.log('componentDidMount');
         // เรียก API จังหวะนี้
@@ -110,12 +133,19 @@ import { Content } from 'antd/lib/layout/layout';
            return  <Layout>Loading...</Layout>
         }
        // console.log(this.state.data);
-       const columns =[
+            let { sortedInfo, filteredInfo } = this.state;
+            sortedInfo = sortedInfo || {};
+            filteredInfo = filteredInfo || {};
+        const columns =[
            {
             title: "Name",
             dataIndex: "name",
             key: "name",
-
+            filteredValue: filteredInfo.name || null,
+            onFilter: (value, record) => record.name.includes(value),
+            sorter: (a, b) => a.name.length - b.name.length,
+            sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
+            ellipsis: true,
            },
            {
             title: "Published",
@@ -148,8 +178,13 @@ import { Content } from 'antd/lib/layout/layout';
        ];
         return (
             <Layout>
-            <Button type="primary">Primary Button</Button>
-            Shop List
+            <Button type="primary">Create Shop</Button>
+            <Create  
+                setLoading={value => this.setState({
+                    is_loading: value
+                })}
+                fetchData={()=> this.fetchData()}
+            />
             {this.state.message}
                 {this.state.data.map(item =>
                      <div key={item._id}>
